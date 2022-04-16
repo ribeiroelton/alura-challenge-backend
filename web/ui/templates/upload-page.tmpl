@@ -1,0 +1,47 @@
+{{ template "base" . }}
+
+{{ define "title" }} Upload  {{ end }}
+
+{{ define "body" }}
+    {{ if .status }}
+        {{ if eq .status "ok" }}
+            <div class="alert alert-success" role="alert">
+                Total of Records: {{ .total_records  }} 
+                <br>
+                Records Imported: {{ .success_records }}
+            </div>
+        {{ end }}
+        {{ if eq .status "error"}}
+            <div class="alert alert-danger" role="alert">
+                Details: {{ .details }}
+            </div>
+        {{ else if eq .status "warning" }}
+            <div class="alert alert-warning" role="alert">
+                Details: {{ .details }}
+            </div>
+        {{ end }}
+    {{ end }}
+
+    <form action="upload" method="post" enctype="multipart/form-data">
+        <input type="file" accept=".csv" class="form-control mb-1" id="upload" name="file" required>
+        <button type="submit" class="btn btn-primary mb-1">Upload</button>
+    </form>
+
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Transactions Date</th>
+            <th scope="col">Import Date</th>
+          </tr>
+        </thead>
+        <tbody>
+        {{ range .imports }}
+          <tr>
+              <td>{{ .TransactionsImportDate.Local.Format "02/01/2006" }}</td>
+              <td>{{ .ImportDate.Local.Format "02/01/2006 - 15:04:05" }}</td>
+          </tr>
+        {{ end }}
+        </tbody>
+      </table>  
+
+{{ end }}

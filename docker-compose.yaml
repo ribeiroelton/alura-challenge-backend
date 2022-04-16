@@ -1,0 +1,15 @@
+services:
+  mongo:
+    image: mongo:5.0.6-focal
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+      - MONGO_INITDB_DATABASE=blog
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - 27017:27017
+
+volumes:
+  mongo_data:
