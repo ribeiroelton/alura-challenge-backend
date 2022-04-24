@@ -14,11 +14,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
+//MongoDB struct that implements all Repository spi interface
 type MongoDB struct {
 	DB  *mongo.Database
 	CLI *mongo.Client
 }
 
+//NewMongoDB creates a new MongoDB
 func NewMongoDB(c *config.Config) (*MongoDB, error) {
 	opts := options.Client().ApplyURI(c.ConnString)
 	cli, err := mongo.NewClient(opts)
@@ -40,6 +42,7 @@ func NewMongoDB(c *config.Config) (*MongoDB, error) {
 	return &MongoDB{DB: db, CLI: cli}, nil
 }
 
+//SaveTransaction saves a new transaction to the database. Default timeout of 3 seconds
 func (m *MongoDB) SaveTransaction(t *model.Transaction) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -53,25 +56,19 @@ func (m *MongoDB) SaveTransaction(t *model.Transaction) error {
 	return nil
 }
 
-func (m *MongoDB) ListTransactionsByDate() ([]model.Transaction, error) {
+//ListTransactions returns a slice of Transactions. Empty if no transactions found. Default timeout of 30 seconds
+func (m *MongoDB) ListTransactions() ([]model.Transaction, error) {
 	ts := []model.Transaction{}
 
 	return ts, nil
 }
 
+//SaveImport saves a import stats to the database. Default timeout of 3 seconds
 func (m *MongoDB) SaveImport(u *model.Import) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	ok, err := m.HasImportByTransactionDate(u.TransactionDate)
-	if err != nil {
-		return err
-	}
-	if ok {
-		return nil
-	}
-
-	_, err = m.DB.Collection("imports").InsertOne(ctx, u)
+	_, err := m.DB.Collection("imports").InsertOne(ctx, u)
 	if err != nil {
 		return err
 	}
@@ -79,6 +76,7 @@ func (m *MongoDB) SaveImport(u *model.Import) error {
 	return nil
 }
 
+//HasImportByTransactionDate returns true if has transactions imports in a specific date. Default timeout of 3 seconds.
 func (m *MongoDB) HasImportByTransactionDate(dt time.Time) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -98,6 +96,7 @@ func (m *MongoDB) HasImportByTransactionDate(dt time.Time) (bool, error) {
 	return true, nil
 }
 
+//ListImports returns a slice of imports. Default timeout of 30 seconds.
 func (m *MongoDB) ListImports() ([]model.Import, error) {
 	us := []model.Import{}
 
@@ -121,6 +120,7 @@ func (m *MongoDB) ListImports() ([]model.Import, error) {
 	return us, nil
 }
 
+//SaveUser saves a new user to the database if the specified email does not already exists.
 func (m *MongoDB) SaveUser(u *model.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -129,24 +129,20 @@ func (m *MongoDB) SaveUser(u *model.User) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
-// func (m *MongoDB) UpdateUserByEmail(email string, update *model.User) error {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-// 	defer cancel()
+//UpdateUserByEmail updates an user using its email as key. Default timeout of 3 seconds
+//TODO implements DeleteUserByEmail
+func (m *MongoDB) UpdateUserByEmail(update *model.User) error {
+	_, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
-// 	filter := bson.D{{Key: "email", Value: email}}
+	return nil
+}
 
-// 	update = bson.D{{"$set", bson.D{{"email", "newemail@example.com"}}}}
-
-// 	_, err := m.DB.Collection("users").FindOneAndUpdate(ctx, filter, update)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-
+//DeleteUserByEmail deletes an user by using its email. Default timeout of 3 seconds
 func (m *MongoDB) DeleteUserByEmail(email string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -163,6 +159,7 @@ func (m *MongoDB) DeleteUserByEmail(email string) error {
 	return nil
 }
 
+//GetUserByEmail returns an user by its email. Default timeout of 3 seconds
 func (m *MongoDB) GetUserByEmail(email string) (*model.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -170,9 +167,6 @@ func (m *MongoDB) GetUserByEmail(email string) (*model.User, error) {
 	filter := bson.D{{Key: email, Value: email}}
 
 	r := m.DB.Collection("users").FindOne(ctx, filter)
-	if r.Err() != mongo.ErrNoDocuments {
-		return nil, errors.New("user not found")
-	}
 	if r.Err() != nil {
 		return nil, r.Err()
 	}
@@ -186,6 +180,25 @@ func (m *MongoDB) GetUserByEmail(email string) (*model.User, error) {
 	return u, nil
 }
 
+//HasUserByEmail returns true if found and user by its email, otherwise returns false. Default timeout of 3 seconds
+func (m *MongoDB) HasUserByEmail(email string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	filter := bson.D{{Key: email, Value: email}}
+
+	r := m.DB.Collection("users").FindOne(ctx, filter)
+	if r.Err() == mongo.ErrNoDocuments {
+		return false, nil
+	}
+	if r.Err() != nil {
+		return false, r.Err()
+	}
+
+	return true, nil
+}
+
+//ListUsers returns a slice of users. Empty if no users found. Default timeout of 30 seconds.
 func (m *MongoDB) ListUsers() ([]model.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

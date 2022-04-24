@@ -8,7 +8,7 @@ import (
 
 type TransactionRepository interface {
 	SaveTransaction(*model.Transaction) error
-	ListTransactionsByDate() ([]model.Transaction, error)
+	ListTransactions() ([]model.Transaction, error)
 	SaveImport(*model.Import) error
 	HasImportByTransactionDate(time.Time) (bool, error)
 	ListImports() ([]model.Import, error)

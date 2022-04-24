@@ -13,6 +13,7 @@ const (
 	OK      ImportTransactionsFileStatus = iota
 )
 
+//String returns the string value of enum ImportTransactionsFileStatus
 func (s ImportTransactionsFileStatus) String() string {
 	switch s {
 	case WARNING:

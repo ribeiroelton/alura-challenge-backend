@@ -13,6 +13,7 @@ import (
 	"github.com/ribeiroelton/alura-challenge-backend/web/ui"
 )
 
+//configureServer defines all components required to create an application
 func configureServer() *ui.Server {
 	//TODO Adopt Viper
 	c := &config.Config{

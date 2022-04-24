@@ -9,5 +9,6 @@ type UserRepository interface {
 	UpdateUser(*model.User) error
 	DeleteUserByEmail(email string) error
 	GetUserByEmail(email string) (*model.User, error)
+	HasUserByEmail(email string) (bool, error)
 	ListUsers() ([]model.User, error)
 }

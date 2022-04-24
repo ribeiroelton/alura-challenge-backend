@@ -15,16 +15,19 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+//TransactionServiceConfig config struct used as param for NewTransactionService.
 type TransactionServiceConfig struct {
 	Log logger.Logger
 	DB  spi.TransactionRepository
 }
 
+//TransactionService struct that implements all Transaction api port.
 type TransactionService struct {
 	log logger.Logger
 	db  spi.TransactionRepository
 }
 
+//NewTransactionService creates a new TransactionService
 func NewTransactionService(c TransactionServiceConfig) *TransactionService {
 	return &TransactionService{
 		log: c.Log,
@@ -32,6 +35,7 @@ func NewTransactionService(c TransactionServiceConfig) *TransactionService {
 	}
 }
 
+//ImportTransactionsFile imports a .csv file with one or more transactions of the same type.
 func (s *TransactionService) ImportTransactionsFile(r *api.ImportTransactionsFileRequest) (*api.ImportTransactionsFileResponse, error) {
 	var firstTransactionDate time.Time
 	var countSuccess int
@@ -117,16 +121,26 @@ func (s *TransactionService) ImportTransactionsFile(r *api.ImportTransactionsFil
 		UpdatedAt:       time.Now(),
 	}
 
-	if err := s.db.SaveImport(us); err != nil {
+	ok, err := s.db.HasImportByTransactionDate(us.TransactionDate)
+	if err != nil {
 		return &api.ImportTransactionsFileResponse{
 			Status:  api.ERROR,
-			Details: "error while saving upload status",
+			Details: "error while checking upload status",
 		}, err
+	}
+	if !ok {
+		if err := s.db.SaveImport(us); err != nil {
+			return &api.ImportTransactionsFileResponse{
+				Status:  api.ERROR,
+				Details: "error while saving upload status",
+			}, err
+		}
 	}
 
 	return res, nil
 }
 
+//ListImports lists all file imports
 func (s *TransactionService) ListImports() ([]api.ListImportsResponse, error) {
 	imports, err := s.db.ListImports()
 	if err != nil {
@@ -141,6 +155,7 @@ func (s *TransactionService) ListImports() ([]api.ListImportsResponse, error) {
 	return res, nil
 }
 
+//newTransaction creates a new transaction struct with validaded required fields.
 func newTransaction(record []string) (*model.Transaction, error) {
 
 	if len(record) != 8 {
