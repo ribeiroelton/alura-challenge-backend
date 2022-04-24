@@ -7,7 +7,7 @@ import (
 	"syscall"
 
 	"github.com/ribeiroelton/alura-challenge-backend/config"
-	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/services"
+	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/usecase"
 	"github.com/ribeiroelton/alura-challenge-backend/pkg/logger"
 	"github.com/ribeiroelton/alura-challenge-backend/repository"
 	"github.com/ribeiroelton/alura-challenge-backend/web/ui"
@@ -31,17 +31,11 @@ func configureServer() *ui.Server {
 		log.Fatalf("error while creating database, details %v \n", err)
 	}
 
-	svcConfig := services.TransactionServiceConfig{
+	svcConfig := usecase.TransactionServiceConfig{
 		Log: zap,
 		DB:  db,
 	}
-	svc := services.NewTransactionService(svcConfig)
-
-	thConfig := ui.HandlerConfig{
-		Service: svc,
-		Log:     zap,
-	}
-	th := ui.NewHandler(thConfig)
+	svc := usecase.NewTransactionService(svcConfig)
 
 	serverConfig := ui.ServerConfig{
 		Config: c,
@@ -49,8 +43,12 @@ func configureServer() *ui.Server {
 	}
 	s := ui.NewServer(serverConfig)
 
-	s.Srv.GET("/upload", th.GetUpload)
-	s.Srv.POST("/upload", th.PostUpload)
+	thConfig := ui.TransactionsHandlerConfig{
+		Service: svc,
+		Log:     zap,
+		Srv:     s.Srv,
+	}
+	ui.NewTransactionsHandler(thConfig)
 
 	return s
 }

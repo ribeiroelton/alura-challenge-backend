@@ -4,28 +4,31 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports"
+	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/api"
 	"github.com/ribeiroelton/alura-challenge-backend/pkg/logger"
 )
 
-type HandlerConfig struct {
-	Service ports.Service
+type TransactionsHandlerConfig struct {
+	Service api.Transaction
 	Log     logger.Logger
+	Srv     *echo.Echo
 }
 
-type Handler struct {
-	service ports.Service
+type TransactionsHandler struct {
+	service api.Transaction
 	log     logger.Logger
 }
 
-func NewHandler(c HandlerConfig) *Handler {
-	return &Handler{
+func NewTransactionsHandler(c TransactionsHandlerConfig) {
+	h := &TransactionsHandler{
 		service: c.Service,
 		log:     c.Log,
 	}
+	c.Srv.GET("/upload", h.GetUpload)
+	c.Srv.POST("/upload", h.PostUpload)
 }
 
-func (h *Handler) GetUpload(c echo.Context) error {
+func (h *TransactionsHandler) GetUpload(c echo.Context) error {
 	imports, err := h.service.ListImports()
 	if err != nil {
 		return err
@@ -41,13 +44,18 @@ func (h *Handler) GetUpload(c echo.Context) error {
 	return nil
 }
 
-func (h *Handler) PostUpload(c echo.Context) error {
+func (h *TransactionsHandler) PostUpload(c echo.Context) error {
+	imports, err := h.service.ListImports()
+	if err != nil {
+		return err
+	}
 
 	file, err := c.FormFile("file")
 	if err != nil {
 		data := make(map[string]interface{})
 		data["status"] = "error"
 		data["details"] = err.Error()
+		data["imports"] = imports
 		c.Render(http.StatusSeeOther, "upload-page.tmpl", data)
 		return err
 	}
@@ -59,11 +67,12 @@ func (h *Handler) PostUpload(c echo.Context) error {
 		data := make(map[string]interface{})
 		data["status"] = "error"
 		data["details"] = err.Error()
+		data["imports"] = imports
 		c.Render(http.StatusSeeOther, "upload-page.tmpl", data)
 		return err
 	}
 
-	req := &ports.ImportTransactionsFileRequest{
+	req := &api.ImportTransactionsFileRequest{
 		FileReader:   m,
 		Filename:     file.Filename,
 		FileSizeInMB: float64(file.Size) / 1024 / 1024,
@@ -74,6 +83,7 @@ func (h *Handler) PostUpload(c echo.Context) error {
 		data := make(map[string]interface{})
 		data["status"] = res.Status.String()
 		data["details"] = res.Details
+		data["imports"] = imports
 		c.Render(http.StatusSeeOther, "upload-page.tmpl", data)
 		h.log.Info(data)
 		return err
@@ -83,6 +93,7 @@ func (h *Handler) PostUpload(c echo.Context) error {
 	data["status"] = res.Status.String()
 	data["success_records"] = res.TotalValidRecords
 	data["total_records"] = res.TotalProcessedRecords
+	data["imports"] = imports
 	c.Render(http.StatusSeeOther, "upload-page.tmpl", data)
 
 	return nil

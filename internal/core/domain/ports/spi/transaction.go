@@ -1,4 +1,4 @@
-package ports
+package spi
 
 import (
 	"time"
@@ -6,7 +6,7 @@ import (
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/model"
 )
 
-type Repository interface {
+type TransactionRepository interface {
 	SaveTransaction(*model.Transaction) error
 	ListTransactionsByDate() ([]model.Transaction, error)
 	SaveImport(*model.Import) error

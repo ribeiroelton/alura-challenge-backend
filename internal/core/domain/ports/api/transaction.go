@@ -1,4 +1,4 @@
-package ports
+package api
 
 import (
 	"io"
@@ -43,12 +43,7 @@ type ListImportsResponse struct {
 	TransactionsImportDate time.Time
 }
 
-type GetUserResponse struct {
-	Name  string
-	Email string
-}
-
-type Service interface {
+type Transaction interface {
 	ImportTransactionsFile(*ImportTransactionsFileRequest) (*ImportTransactionsFileResponse, error)
 	ListImports() ([]ListImportsResponse, error)
 }

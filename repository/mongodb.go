@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
 
@@ -118,4 +119,96 @@ func (m *MongoDB) ListImports() ([]model.Import, error) {
 	}
 
 	return us, nil
+}
+
+func (m *MongoDB) SaveUser(u *model.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := m.DB.Collection("users").InsertOne(ctx, u)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// func (m *MongoDB) UpdateUserByEmail(email string, update *model.User) error {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+// 	defer cancel()
+
+// 	filter := bson.D{{Key: "email", Value: email}}
+
+// 	update = bson.D{{"$set", bson.D{{"email", "newemail@example.com"}}}}
+
+// 	_, err := m.DB.Collection("users").FindOneAndUpdate(ctx, filter, update)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
+
+func (m *MongoDB) DeleteUserByEmail(email string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	filter := bson.D{{Key: email, Value: email}}
+
+	r, err := m.DB.Collection("users").DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+	if r.DeletedCount == 0 {
+		return errors.New("user not found")
+	}
+	return nil
+}
+
+func (m *MongoDB) GetUserByEmail(email string) (*model.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	filter := bson.D{{Key: email, Value: email}}
+
+	r := m.DB.Collection("users").FindOne(ctx, filter)
+	if r.Err() != mongo.ErrNoDocuments {
+		return nil, errors.New("user not found")
+	}
+	if r.Err() != nil {
+		return nil, r.Err()
+	}
+
+	u := &model.User{}
+
+	if err := r.Decode(u); err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}
+
+func (m *MongoDB) ListUsers() ([]model.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	users := []model.User{}
+
+	cur, err := m.DB.Collection("users").Find(ctx, bson.D{{}})
+	if err != nil {
+		return nil, err
+	}
+
+	ctxList, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	for cur.Next(ctxList) {
+		u := &model.User{}
+
+		if err := cur.Decode(u); err != nil {
+			return nil, err
+		}
+
+		users = append(users, *u)
+	}
+
+	return users, nil
 }

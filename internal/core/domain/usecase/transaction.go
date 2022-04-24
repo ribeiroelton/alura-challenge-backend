@@ -1,4 +1,4 @@
-package services
+package usecase
 
 import (
 	"encoding/csv"
@@ -8,7 +8,8 @@ import (
 	"time"
 
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/model"
-	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports"
+	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/api"
+	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/spi"
 	"github.com/ribeiroelton/alura-challenge-backend/pkg/logger"
 	"github.com/ribeiroelton/alura-challenge-backend/pkg/validator"
 	"github.com/shopspring/decimal"
@@ -16,12 +17,12 @@ import (
 
 type TransactionServiceConfig struct {
 	Log logger.Logger
-	DB  ports.Repository
+	DB  spi.TransactionRepository
 }
 
 type TransactionService struct {
 	log logger.Logger
-	db  ports.Repository
+	db  spi.TransactionRepository
 }
 
 func NewTransactionService(c TransactionServiceConfig) *TransactionService {
@@ -31,11 +32,11 @@ func NewTransactionService(c TransactionServiceConfig) *TransactionService {
 	}
 }
 
-func (s *TransactionService) ImportTransactionsFile(r *ports.ImportTransactionsFileRequest) (*ports.ImportTransactionsFileResponse, error) {
+func (s *TransactionService) ImportTransactionsFile(r *api.ImportTransactionsFileRequest) (*api.ImportTransactionsFileResponse, error) {
 	var firstTransactionDate time.Time
 	var countSuccess int
 	var countTotal int
-	var res *ports.ImportTransactionsFileResponse
+	var res *api.ImportTransactionsFileResponse
 
 	csv := csv.NewReader(r.FileReader)
 
@@ -45,16 +46,16 @@ func (s *TransactionService) ImportTransactionsFile(r *ports.ImportTransactionsF
 		record, err := csv.Read()
 		if first {
 			if err == io.EOF {
-				return &ports.ImportTransactionsFileResponse{
-					Status:  ports.WARNING,
+				return &api.ImportTransactionsFileResponse{
+					Status:  api.WARNING,
 					Details: "empty file",
 				}, errors.New("empty file")
 			}
 
 			t, err := newTransaction(record)
 			if err != nil {
-				return &ports.ImportTransactionsFileResponse{
-					Status:  ports.ERROR,
+				return &api.ImportTransactionsFileResponse{
+					Status:  api.ERROR,
 					Details: "first transaction is invalid",
 				}, err
 			}
@@ -65,8 +66,8 @@ func (s *TransactionService) ImportTransactionsFile(r *ports.ImportTransactionsF
 		}
 		if err == io.EOF {
 			countTotal--
-			res = &ports.ImportTransactionsFileResponse{
-				Status:                ports.OK,
+			res = &api.ImportTransactionsFileResponse{
+				Status:                api.OK,
 				Details:               "end of file",
 				TotalProcessedRecords: countTotal,
 				TotalValidRecords:     countSuccess,
@@ -91,8 +92,8 @@ func (s *TransactionService) ImportTransactionsFile(r *ports.ImportTransactionsF
 			continue
 		}
 		if ok {
-			return &ports.ImportTransactionsFileResponse{
-				Status:  ports.WARNING,
+			return &api.ImportTransactionsFileResponse{
+				Status:  api.WARNING,
 				Details: "transactions already imported",
 			}, errors.New("transactions already imported")
 		} else {
@@ -117,8 +118,8 @@ func (s *TransactionService) ImportTransactionsFile(r *ports.ImportTransactionsF
 	}
 
 	if err := s.db.SaveImport(us); err != nil {
-		return &ports.ImportTransactionsFileResponse{
-			Status:  ports.ERROR,
+		return &api.ImportTransactionsFileResponse{
+			Status:  api.ERROR,
 			Details: "error while saving upload status",
 		}, err
 	}
@@ -126,16 +127,16 @@ func (s *TransactionService) ImportTransactionsFile(r *ports.ImportTransactionsF
 	return res, nil
 }
 
-func (s *TransactionService) ListImports() ([]ports.ListImportsResponse, error) {
+func (s *TransactionService) ListImports() ([]api.ListImportsResponse, error) {
 	imports, err := s.db.ListImports()
 	if err != nil {
 		return nil, err
 	}
 
-	res := []ports.ListImportsResponse{}
+	res := []api.ListImportsResponse{}
 
 	for _, i := range imports {
-		res = append(res, ports.ListImportsResponse{ImportDate: i.ImportDate, TransactionsImportDate: i.TransactionDate})
+		res = append(res, api.ListImportsResponse{ImportDate: i.ImportDate, TransactionsImportDate: i.TransactionDate})
 	}
 	return res, nil
 }
