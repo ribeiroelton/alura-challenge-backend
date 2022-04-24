@@ -43,6 +43,11 @@ type ListImportsResponse struct {
 	TransactionsImportDate time.Time
 }
 
+type GetUserResponse struct {
+	Name  string
+	Email string
+}
+
 type Service interface {
 	ImportTransactionsFile(*ImportTransactionsFileRequest) (*ImportTransactionsFileResponse, error)
 	ListImports() ([]ListImportsResponse, error)

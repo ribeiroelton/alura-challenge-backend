@@ -84,7 +84,7 @@ func (m *MongoDB) HasImportByTransactionDate(dt time.Time) (bool, error) {
 
 	date, _ := time.Parse("2006-01-02", dt.Format("2006-01-02"))
 
-	filter := bson.D{{Key: "transaction_date", Value: bson.D{{Key: "$gte", Value: date}, {Key: "$lt", Value: date.AddDate(0, 0, 1)}}}}
+	filter := bson.D{{Key: "transactiondate", Value: bson.D{{Key: "$gte", Value: date}, {Key: "$lt", Value: date.AddDate(0, 0, 1)}}}}
 
 	r := m.DB.Collection("imports").FindOne(ctx, filter)
 	if r.Err() == mongo.ErrNoDocuments {
