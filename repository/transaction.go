@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/ribeiroelton/alura-challenge-backend/config"
@@ -118,7 +117,6 @@ func (tr *TransactionRepository) ListImports() ([]model.Import, error) {
 			return nil, err
 		}
 		us = append(us, u)
-		log.Println(u)
 	}
 
 	return us, nil
