@@ -70,7 +70,6 @@ func (s *UserService) GetUser(email string) (*api.GetUserResponse, error) {
 		return nil, err
 	}
 	return &api.GetUserResponse{
-		ID:    u.ID,
 		Name:  u.Name,
 		Email: u.Email,
 	}, nil
@@ -87,7 +86,6 @@ func (s *UserService) ListUsers() ([]api.GetUserResponse, error) {
 
 	for _, u := range us {
 		r := api.GetUserResponse{
-			ID:    u.ID,
 			Name:  u.Name,
 			Email: u.Email,
 		}

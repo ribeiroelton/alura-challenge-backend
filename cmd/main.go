@@ -38,9 +38,15 @@ func configureServer() *ui.Server {
 		log.Fatalf("error while creating transaction repository, details %v \n", err)
 	}
 
+	ir, err := repository.NewImportRepository(c)
+	if err != nil {
+		log.Fatalf("error while creating import repository, details %v \n", err)
+	}
+
 	tsConfig := usecase.TransactionServiceConfig{
-		Log: zap,
-		DB:  tr,
+		Log:           zap,
+		TransactionDB: tr,
+		ImportDB:      ir,
 	}
 	ts := usecase.NewTransactionService(tsConfig)
 

@@ -1,7 +1,6 @@
 package api
 
 type GetUserResponse struct {
-	ID    string
 	Name  string
 	Email string
 }

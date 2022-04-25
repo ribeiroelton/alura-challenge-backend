@@ -7,7 +7,6 @@ import (
 )
 
 type Transaction struct {
-	ID                  string          `bson:"_id"`
 	SourceBank          string          `validate:"required,min=2"`
 	SourceAgency        string          `validate:"required,min=2"`
 	SourceAccount       string          `validate:"required,min=2"`
@@ -18,14 +17,4 @@ type Transaction struct {
 	TransactionDatetime time.Time       `validate:"required"`
 	CreatedAt           time.Time       `validate:"required"`
 	UpdatedAt           time.Time       `validate:"required"`
-}
-
-type Import struct {
-	ID              string    `bson:"_id"`
-	TransactionDate time.Time `validate:"required"`
-	ImportDate      time.Time `validate:"required"`
-	Filename        string    `validate:"required,min=1"`
-	FileSizeInMB    float64   `validate:"required"`
-	CreatedAt       time.Time `validate:"required"`
-	UpdatedAt       time.Time `validate:"required"`
 }

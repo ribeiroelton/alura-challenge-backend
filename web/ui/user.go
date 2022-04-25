@@ -71,6 +71,14 @@ func (h *UserHandler) PostUsersEdit(c echo.Context) error {
 		return err
 	}
 
+	lu, err := h.service.ListUsers()
+	if err != nil {
+		data["status"] = "error"
+		data["details"] = err.Error()
+		c.Render(http.StatusOK, "users-page.tmpl", data)
+		return err
+	}
+	data["users"] = lu
 	data["status"] = "ok"
 	data["details"] = "User created with success"
 	c.Render(http.StatusSeeOther, "users-page.tmpl", data)

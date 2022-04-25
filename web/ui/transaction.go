@@ -45,14 +45,13 @@ func (h *TransactionsHandler) GetUpload(c echo.Context) error {
 }
 
 func (h *TransactionsHandler) PostUpload(c echo.Context) error {
-	imports, err := h.service.ListImports()
-	if err != nil {
-		return err
-	}
-
 	file, err := c.FormFile("file")
 	if err != nil {
 		data := make(map[string]interface{})
+		imports, err := h.service.ListImports()
+		if err != nil {
+			return err
+		}
 		data["status"] = "error"
 		data["details"] = err.Error()
 		data["imports"] = imports
@@ -65,6 +64,10 @@ func (h *TransactionsHandler) PostUpload(c echo.Context) error {
 	m, err := file.Open()
 	if err != nil {
 		data := make(map[string]interface{})
+		imports, err := h.service.ListImports()
+		if err != nil {
+			return err
+		}
 		data["status"] = "error"
 		data["details"] = err.Error()
 		data["imports"] = imports
@@ -81,6 +84,10 @@ func (h *TransactionsHandler) PostUpload(c echo.Context) error {
 	res, err := h.service.ImportTransactionsFile(req)
 	if err != nil {
 		data := make(map[string]interface{})
+		imports, err := h.service.ListImports()
+		if err != nil {
+			return err
+		}
 		data["status"] = res.Status.String()
 		data["details"] = res.Details
 		data["imports"] = imports
@@ -91,6 +98,10 @@ func (h *TransactionsHandler) PostUpload(c echo.Context) error {
 
 	data := make(map[string]interface{})
 	data["status"] = res.Status.String()
+	imports, err := h.service.ListImports()
+	if err != nil {
+		return err
+	}
 	data["success_records"] = res.TotalValidRecords
 	data["total_records"] = res.TotalProcessedRecords
 	data["imports"] = imports

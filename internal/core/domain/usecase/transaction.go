@@ -17,21 +17,24 @@ import (
 
 //TransactionServiceConfig config struct used as param for NewTransactionService.
 type TransactionServiceConfig struct {
-	Log logger.Logger
-	DB  spi.TransactionRepository
+	Log           logger.Logger
+	TransactionDB spi.TransactionRepository
+	ImportDB      spi.ImportRepository
 }
 
 //TransactionService struct that implements all Transaction api port.
 type TransactionService struct {
 	log logger.Logger
-	db  spi.TransactionRepository
+	tdb spi.TransactionRepository
+	idb spi.ImportRepository
 }
 
 //NewTransactionService creates a new TransactionService
 func NewTransactionService(c TransactionServiceConfig) api.Transaction {
 	return &TransactionService{
 		log: c.Log,
-		db:  c.DB,
+		tdb: c.TransactionDB,
+		idb: c.ImportDB,
 	}
 }
 
@@ -90,7 +93,7 @@ func (s *TransactionService) ImportTransactionsFile(r *api.ImportTransactionsFil
 			continue
 		}
 
-		ok, err := s.db.HasImportByTransactionDate(t.TransactionDatetime)
+		ok, err := s.idb.HasImportByTransactionDate(t.TransactionDatetime)
 		if err != nil {
 			s.log.Error("error while checking if transaction exists, details", err)
 			continue
@@ -101,7 +104,7 @@ func (s *TransactionService) ImportTransactionsFile(r *api.ImportTransactionsFil
 				Details: "transactions already imported",
 			}, errors.New("transactions already imported")
 		} else {
-			err := s.db.SaveTransaction(t)
+			err := s.tdb.SaveTransaction(t)
 			if err != nil {
 				s.log.Error("error while saving transaction, details", err)
 				continue
@@ -121,7 +124,7 @@ func (s *TransactionService) ImportTransactionsFile(r *api.ImportTransactionsFil
 		UpdatedAt:       time.Now(),
 	}
 
-	ok, err := s.db.HasImportByTransactionDate(us.TransactionDate)
+	ok, err := s.idb.HasImportByTransactionDate(us.TransactionDate)
 	if err != nil {
 		return &api.ImportTransactionsFileResponse{
 			Status:  api.ERROR,
@@ -129,7 +132,7 @@ func (s *TransactionService) ImportTransactionsFile(r *api.ImportTransactionsFil
 		}, err
 	}
 	if !ok {
-		if err := s.db.SaveImport(us); err != nil {
+		if err := s.idb.SaveImport(us); err != nil {
 			return &api.ImportTransactionsFileResponse{
 				Status:  api.ERROR,
 				Details: "error while saving upload status",
@@ -142,7 +145,7 @@ func (s *TransactionService) ImportTransactionsFile(r *api.ImportTransactionsFil
 
 //ListImports lists all file imports
 func (s *TransactionService) ListImports() ([]api.ListImportsResponse, error) {
-	imports, err := s.db.ListImports()
+	imports, err := s.idb.ListImports()
 	if err != nil {
 		return nil, err
 	}
