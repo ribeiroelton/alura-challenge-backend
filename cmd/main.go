@@ -27,29 +27,48 @@ func configureServer() *ui.Server {
 		log.Fatalf("error while creating logger, details %v", err)
 	}
 
-	db, err := repository.NewMongoDB(c)
-	if err != nil {
-		log.Fatalf("error while creating database, details %v \n", err)
-	}
-
-	svcConfig := usecase.TransactionServiceConfig{
-		Log: zap,
-		DB:  db,
-	}
-	svc := usecase.NewTransactionService(svcConfig)
-
 	serverConfig := ui.ServerConfig{
 		Config: c,
 		Log:    zap,
 	}
 	s := ui.NewServer(serverConfig)
 
-	thConfig := ui.TransactionsHandlerConfig{
-		Service: svc,
+	tr, err := repository.NewTransactionRepository(c)
+	if err != nil {
+		log.Fatalf("error while creating transaction repository, details %v \n", err)
+	}
+
+	tsConfig := usecase.TransactionServiceConfig{
+		Log: zap,
+		DB:  tr,
+	}
+	ts := usecase.NewTransactionService(tsConfig)
+
+	thConfig := &ui.TransactionsHandlerConfig{
+		Service: ts,
 		Log:     zap,
 		Srv:     s.Srv,
 	}
 	ui.NewTransactionsHandler(thConfig)
+
+	ur, err := repository.NewUserRepository(c)
+	if err != nil {
+		log.Fatalf("error while creating user repository, details %v \n", err)
+	}
+
+	usConfig := usecase.UserServiceConfig{
+		Log: zap,
+		DB:  ur,
+	}
+
+	us := usecase.NewUserService(usConfig)
+
+	uhConfig := &ui.UserHandlerConfig{
+		Service: us,
+		Log:     zap,
+		Srv:     s.Srv,
+	}
+	ui.NewUserHandler(uhConfig)
 
 	return s
 }
