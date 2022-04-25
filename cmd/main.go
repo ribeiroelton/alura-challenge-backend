@@ -16,23 +16,21 @@ import (
 //configureServer defines all components required to create an application
 func configureServer() *ui.Server {
 	//TODO Adopt Viper
+
+	//Config
 	c := &config.Config{
 		ServerAddress: ":8080",
 		ConnString:    "mongodb://admin:admin@localhost:27017",
 		DatabaseName:  "challenge",
 	}
 
+	//Logger
 	zap, err := logger.NewZapLogger()
 	if err != nil {
 		log.Fatalf("error while creating logger, details %v", err)
 	}
 
-	serverConfig := ui.ServerConfig{
-		Config: c,
-		Log:    zap,
-	}
-	s := ui.NewServer(serverConfig)
-
+	//Repos
 	tr, err := repository.NewTransactionRepository(c)
 	if err != nil {
 		log.Fatalf("error while creating transaction repository, details %v \n", err)
@@ -43,6 +41,12 @@ func configureServer() *ui.Server {
 		log.Fatalf("error while creating import repository, details %v \n", err)
 	}
 
+	ur, err := repository.NewUserRepository(c)
+	if err != nil {
+		log.Fatalf("error while creating user repository, details %v \n", err)
+	}
+
+	//Services
 	tsConfig := usecase.TransactionServiceConfig{
 		Log:           zap,
 		TransactionDB: tr,
@@ -50,24 +54,26 @@ func configureServer() *ui.Server {
 	}
 	ts := usecase.NewTransactionService(tsConfig)
 
+	usConfig := usecase.UserServiceConfig{
+		Log: zap,
+		DB:  ur,
+	}
+	us := usecase.NewUserService(usConfig)
+
+	//Server
+	serverConfig := ui.ServerConfig{
+		Config: c,
+		Log:    zap,
+	}
+	s := ui.NewServer(serverConfig)
+
+	//Handlers
 	thConfig := &ui.TransactionsHandlerConfig{
 		Service: ts,
 		Log:     zap,
 		Srv:     s.Srv,
 	}
 	ui.NewTransactionsHandler(thConfig)
-
-	ur, err := repository.NewUserRepository(c)
-	if err != nil {
-		log.Fatalf("error while creating user repository, details %v \n", err)
-	}
-
-	usConfig := usecase.UserServiceConfig{
-		Log: zap,
-		DB:  ur,
-	}
-
-	us := usecase.NewUserService(usConfig)
 
 	uhConfig := &ui.UserHandlerConfig{
 		Service: us,
