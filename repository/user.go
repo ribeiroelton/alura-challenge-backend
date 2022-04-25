@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/ribeiroelton/alura-challenge-backend/config"
@@ -110,9 +111,12 @@ func (ur *UserRepository) HasUserByEmail(email string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	filter := bson.D{{Key: email, Value: email}}
+	filter := bson.D{{Key: "email", Value: email}}
 
 	r := ur.db.Collection(userCollection).FindOne(ctx, filter)
+	u := model.User{}
+	r.Decode(&u)
+	log.Println(u)
 	if r.Err() == mongo.ErrNoDocuments {
 		return false, nil
 	}

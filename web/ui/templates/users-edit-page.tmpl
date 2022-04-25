@@ -1,0 +1,30 @@
+{{ template "base" . }}
+
+{{ define "title" }} Users  {{ end }}
+
+{{ define "body" }}
+    {{ if .status }}
+        {{ if eq .status "ok" }}
+            <div class="alert alert-success" role="alert">
+                Details: {{ .details }}
+            </div>
+        {{ else if eq .status "error"}}
+            <div class="alert alert-danger" role="alert">
+                Details: {{ .details }}
+            </div>
+        {{ else if eq .status "warning" }}
+            <div class="alert alert-warning" role="alert">
+                Details: {{ .details }}
+            </div>
+        {{ end }}
+    {{ end }}
+
+    <form action="users-edit" method="post">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" class="form-control mb-1" id="name" name="name" required >
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control mb-1" id="email" name="email" required>
+        <button type="submit" class="btn btn-primary mb-1">Create</button>
+    </form>
+
+{{ end }}

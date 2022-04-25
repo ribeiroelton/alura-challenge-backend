@@ -19,7 +19,7 @@ type TransactionsHandler struct {
 	log     logger.Logger
 }
 
-func NewTransactionsHandler(c TransactionsHandlerConfig) {
+func NewTransactionsHandler(c *TransactionsHandlerConfig) {
 	h := &TransactionsHandler{
 		service: c.Service,
 		log:     c.Log,

@@ -1,0 +1,44 @@
+{{ template "base" . }}
+
+{{ define "title" }} Users  {{ end }}
+
+{{ define "body" }}
+    {{ if .status }}
+        {{ if eq .status "ok" }}
+            <div class="alert alert-success" role="alert">
+                Details: {{ .details }}
+            </div>
+        {{ else if eq .status "error"}}
+            <div class="alert alert-danger" role="alert">
+                Details: {{ .details }}
+            </div>
+        {{ else if eq .status "warning" }}
+            <div class="alert alert-warning" role="alert">
+                Details: {{ .details }}
+            </div>
+        {{ end }}
+    {{ end }}
+
+    <a class="btn btn-primary" href="/users-edit" role="button">New</a>
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {{ range .users }}
+          <tr>
+              <td>{{ .ID }}</td>
+              <td>{{ .Name }}</td>
+              <td>{{ .Email }}</td>
+              <td>Update, Delete</td>
+          </tr>
+        {{ end }}
+        </tbody>
+      </table>  
+
+{{ end }}
