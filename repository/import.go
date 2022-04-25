@@ -6,7 +6,6 @@ import (
 
 	"github.com/ribeiroelton/alura-challenge-backend/config"
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/model"
-	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/spi"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -21,7 +20,7 @@ const (
 	importsCollection = "imports"
 )
 
-func NewImportRepository(c *config.Config) (spi.ImportRepository, error) {
+func NewImportRepository(c *config.Config) (*ImportRepository, error) {
 	opts := options.Client().ApplyURI(c.ConnString)
 	cli, err := mongo.NewClient(opts)
 

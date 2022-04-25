@@ -7,23 +7,22 @@ import (
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/model"
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/api"
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/spi"
-	"github.com/ribeiroelton/alura-challenge-backend/pkg/logger"
 )
 
 //UserServiceConfig config struct used as param for NewUserService
 type UserServiceConfig struct {
-	Log logger.Logger
+	Log spi.Logger
 	DB  spi.UserRepository
 }
 
 //UserService struct that implements all User api port.
 type UserService struct {
-	Log logger.Logger
+	Log spi.Logger
 	DB  spi.UserRepository
 }
 
 //NewUserService creates a new UserService
-func NewUserService(c UserServiceConfig) api.User {
+func NewUserService(c UserServiceConfig) *UserService {
 	return &UserService{
 		Log: c.Log,
 		DB:  c.DB,

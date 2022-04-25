@@ -5,20 +5,20 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/api"
-	"github.com/ribeiroelton/alura-challenge-backend/pkg/logger"
+	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/spi"
 )
 
 //UserHandlerConfig config struct used as param on NewUserHandler
 type UserHandlerConfig struct {
 	Service api.User
-	Log     logger.Logger
+	Log     spi.Logger
 	Srv     *echo.Echo
 }
 
 //UserHandler handles and requests related to User api interface
 type UserHandler struct {
 	service api.User
-	log     logger.Logger
+	log     spi.Logger
 }
 
 //NewUserHandler creates and UserHandler

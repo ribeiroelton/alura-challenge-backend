@@ -4,7 +4,12 @@ import (
 	"github.com/go-playground/validator"
 )
 
-func Validate(s interface{}) (map[string]map[string]string, error) {
+type GOValidator struct{}
+
+func NewGOValidator() *GOValidator {
+	return &GOValidator{}
+}
+func (*GOValidator) Validate(s interface{}) (map[string]map[string]string, error) {
 	v := validator.New()
 	m := map[string]map[string]string{}
 

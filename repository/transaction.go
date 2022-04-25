@@ -6,7 +6,6 @@ import (
 
 	"github.com/ribeiroelton/alura-challenge-backend/config"
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/model"
-	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/spi"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -20,7 +19,7 @@ const (
 	transactionCollection = "transactions"
 )
 
-func NewTransactionRepository(c *config.Config) (spi.TransactionRepository, error) {
+func NewTransactionRepository(c *config.Config) (*TransactionRepository, error) {
 	opts := options.Client().ApplyURI(c.ConnString)
 	cli, err := mongo.NewClient(opts)
 

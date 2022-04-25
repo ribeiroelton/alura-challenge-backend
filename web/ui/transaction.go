@@ -5,18 +5,18 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/api"
-	"github.com/ribeiroelton/alura-challenge-backend/pkg/logger"
+	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/spi"
 )
 
 type TransactionsHandlerConfig struct {
 	Service api.Transaction
-	Log     logger.Logger
+	Log     spi.Logger
 	Srv     *echo.Echo
 }
 
 type TransactionsHandler struct {
 	service api.Transaction
-	log     logger.Logger
+	log     spi.Logger
 }
 
 func NewTransactionsHandler(c *TransactionsHandlerConfig) {

@@ -1,4 +1,4 @@
-package logger
+package spi
 
 type Logger interface {
 	Info(...interface{})

@@ -9,6 +9,7 @@ import (
 	"github.com/ribeiroelton/alura-challenge-backend/config"
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/usecase"
 	"github.com/ribeiroelton/alura-challenge-backend/pkg/logger"
+	"github.com/ribeiroelton/alura-challenge-backend/pkg/validator"
 	"github.com/ribeiroelton/alura-challenge-backend/repository"
 	"github.com/ribeiroelton/alura-challenge-backend/web/ui"
 )
@@ -29,6 +30,9 @@ func configureServer() *ui.Server {
 	if err != nil {
 		log.Fatalf("error while creating logger, details %v", err)
 	}
+
+	//Validator
+	validator := validator.NewGOValidator()
 
 	//Repos
 	tr, err := repository.NewTransactionRepository(c)
@@ -51,6 +55,7 @@ func configureServer() *ui.Server {
 		Log:           zap,
 		TransactionDB: tr,
 		ImportDB:      ir,
+		Validator:     validator,
 	}
 	ts := usecase.NewTransactionService(tsConfig)
 

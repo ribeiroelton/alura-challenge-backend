@@ -10,31 +10,32 @@ import (
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/model"
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/api"
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/ports/spi"
-	"github.com/ribeiroelton/alura-challenge-backend/pkg/logger"
-	"github.com/ribeiroelton/alura-challenge-backend/pkg/validator"
 	"github.com/shopspring/decimal"
 )
 
 //TransactionServiceConfig config struct used as param for NewTransactionService.
 type TransactionServiceConfig struct {
-	Log           logger.Logger
+	Log           spi.Logger
 	TransactionDB spi.TransactionRepository
 	ImportDB      spi.ImportRepository
+	Validator     spi.Validator
 }
 
 //TransactionService struct that implements all Transaction api port.
 type TransactionService struct {
-	log logger.Logger
-	tdb spi.TransactionRepository
-	idb spi.ImportRepository
+	log       spi.Logger
+	tdb       spi.TransactionRepository
+	idb       spi.ImportRepository
+	validator spi.Validator
 }
 
 //NewTransactionService creates a new TransactionService
-func NewTransactionService(c TransactionServiceConfig) api.Transaction {
+func NewTransactionService(c TransactionServiceConfig) *TransactionService {
 	return &TransactionService{
-		log: c.Log,
-		tdb: c.TransactionDB,
-		idb: c.ImportDB,
+		log:       c.Log,
+		tdb:       c.TransactionDB,
+		idb:       c.ImportDB,
+		validator: c.Validator,
 	}
 }
 
@@ -59,7 +60,7 @@ func (s *TransactionService) ImportTransactionsFile(r *api.ImportTransactionsFil
 				}, errors.New("empty file")
 			}
 
-			t, err := newTransaction(record)
+			t, err := s.newTransaction(record)
 			if err != nil {
 				return &api.ImportTransactionsFileResponse{
 					Status:  api.ERROR,
@@ -82,7 +83,7 @@ func (s *TransactionService) ImportTransactionsFile(r *api.ImportTransactionsFil
 			break
 		}
 
-		t, err := newTransaction(record)
+		t, err := s.newTransaction(record)
 		if err != nil {
 			s.log.Error("error while creating Transaction, details: ", err)
 			continue
@@ -159,7 +160,7 @@ func (s *TransactionService) ListImports() ([]api.ListImportsResponse, error) {
 }
 
 //newTransaction creates a new transaction struct with validaded required fields.
-func newTransaction(record []string) (*model.Transaction, error) {
+func (s *TransactionService) newTransaction(record []string) (*model.Transaction, error) {
 
 	if len(record) != 8 {
 		return nil, errors.New("invalid record, length mismatch")
@@ -188,7 +189,7 @@ func newTransaction(record []string) (*model.Transaction, error) {
 		UpdatedAt:           time.Now(),
 	}
 
-	if m, _ := validator.Validate(t); len(m) != 0 {
+	if m, _ := s.validator.Validate(t); len(m) != 0 {
 		return nil, fmt.Errorf("invalid fiels for this records, details, %+v", m)
 	}
 
