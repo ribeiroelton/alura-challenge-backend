@@ -2,7 +2,7 @@ package logger
 
 import "go.uber.org/zap"
 
-func NewZapLogger() (*zap.SugaredLogger, error) {
+func NewZapLogger() (Logger, error) {
 	loggerConfig := zap.NewProductionConfig()
 	loggerConfig.DisableStacktrace = true
 
