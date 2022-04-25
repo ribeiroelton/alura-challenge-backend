@@ -28,7 +28,7 @@ type TransactionService struct {
 }
 
 //NewTransactionService creates a new TransactionService
-func NewTransactionService(c TransactionServiceConfig) *TransactionService {
+func NewTransactionService(c TransactionServiceConfig) api.Transaction {
 	return &TransactionService{
 		log: c.Log,
 		db:  c.DB,
