@@ -3,7 +3,7 @@ package model
 import "time"
 
 type User struct {
-	ID        string
+	ID        string `bson:"_id"`
 	Name      string `validate:"required"`
 	Email     string `validate:"required,email"`
 	Password  string

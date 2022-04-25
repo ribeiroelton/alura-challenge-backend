@@ -7,7 +7,7 @@ import (
 )
 
 type Transaction struct {
-	ID                  string
+	ID                  string          `bson:"_id"`
 	SourceBank          string          `validate:"required,min=2"`
 	SourceAgency        string          `validate:"required,min=2"`
 	SourceAccount       string          `validate:"required,min=2"`
@@ -21,7 +21,7 @@ type Transaction struct {
 }
 
 type Import struct {
-	ID              string
+	ID              string    `bson:"_id"`
 	TransactionDate time.Time `validate:"required"`
 	ImportDate      time.Time `validate:"required"`
 	Filename        string    `validate:"required,min=1"`
