@@ -9,6 +9,7 @@ import (
 	"github.com/ribeiroelton/alura-challenge-backend/config"
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/usecase"
 	"github.com/ribeiroelton/alura-challenge-backend/pkg/logger"
+	"github.com/ribeiroelton/alura-challenge-backend/pkg/mailer"
 	"github.com/ribeiroelton/alura-challenge-backend/pkg/validator"
 	"github.com/ribeiroelton/alura-challenge-backend/repository"
 	"github.com/ribeiroelton/alura-challenge-backend/web/ui"
@@ -30,6 +31,9 @@ func configureServer() *ui.Server {
 	if err != nil {
 		log.Fatalf("error while creating logger, details %v", err)
 	}
+
+	//Mailer
+	mailer := mailer.NewMailer()
 
 	//Validator
 	validator := validator.NewGOValidator()
@@ -60,8 +64,9 @@ func configureServer() *ui.Server {
 	ts := usecase.NewTransactionService(tsConfig)
 
 	usConfig := usecase.UserServiceConfig{
-		Log: zap,
-		DB:  ur,
+		Log:    zap,
+		DB:     ur,
+		Mailer: mailer,
 	}
 	us := usecase.NewUserService(usConfig)
 
