@@ -11,7 +11,6 @@ import (
 type TransactionsHandlerConfig struct {
 	Service api.Transaction
 	Log     spi.Logger
-	Srv     *echo.Echo
 }
 
 type TransactionsHandler struct {
@@ -19,13 +18,11 @@ type TransactionsHandler struct {
 	log     spi.Logger
 }
 
-func NewTransactionsHandler(c *TransactionsHandlerConfig) {
-	h := &TransactionsHandler{
+func NewTransactionsHandler(c *TransactionsHandlerConfig) *TransactionsHandler {
+	return &TransactionsHandler{
 		service: c.Service,
 		log:     c.Log,
 	}
-	c.Srv.GET("/upload", h.GetUpload)
-	c.Srv.POST("/upload", h.PostUpload)
 }
 
 func (h *TransactionsHandler) GetUpload(c echo.Context) error {

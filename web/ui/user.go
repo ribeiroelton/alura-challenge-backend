@@ -12,7 +12,6 @@ import (
 type UserHandlerConfig struct {
 	Service api.User
 	Log     spi.Logger
-	Srv     *echo.Echo
 }
 
 //UserHandler handles and requests related to User api interface
@@ -22,15 +21,11 @@ type UserHandler struct {
 }
 
 //NewUserHandler creates and UserHandler
-func NewUserHandler(c *UserHandlerConfig) {
-	h := &UserHandler{
+func NewUserHandler(c *UserHandlerConfig) *UserHandler {
+	return &UserHandler{
 		service: c.Service,
 		log:     c.Log,
 	}
-
-	c.Srv.GET("/users", h.GetUsers)
-	c.Srv.GET("/users-edit", h.GetUsersEdit)
-	c.Srv.POST("/users-edit", h.PostUsersEdit)
 }
 
 func (h *UserHandler) GetUsers(c echo.Context) error {

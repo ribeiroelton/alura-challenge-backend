@@ -15,9 +15,10 @@ import (
 	"github.com/ribeiroelton/alura-challenge-backend/web/ui"
 )
 
-//configureServer defines all components required to create an application
-func configureServer() *ui.Server {
+//setupServer defines all components required to create an application
+func setupServer() *ui.Server {
 	//TODO Adopt Viper
+	//TODO Analyze Google Wire DI
 
 	//Config
 	c := &config.Config{
@@ -38,7 +39,7 @@ func configureServer() *ui.Server {
 	//Validator
 	validator := validator.NewGOValidator()
 
-	//Repos
+	//Repositories
 	tr, err := repository.NewTransactionRepository(c)
 	if err != nil {
 		log.Fatalf("error while creating transaction repository, details %v \n", err)
@@ -70,6 +71,19 @@ func configureServer() *ui.Server {
 	}
 	us := usecase.NewUserService(usConfig)
 
+	//Handlers
+	thConfig := &ui.TransactionsHandlerConfig{
+		Service: ts,
+		Log:     zap,
+	}
+	th := ui.NewTransactionsHandler(thConfig)
+
+	uhConfig := &ui.UserHandlerConfig{
+		Service: us,
+		Log:     zap,
+	}
+	uh := ui.NewUserHandler(uhConfig)
+
 	//Server
 	serverConfig := ui.ServerConfig{
 		Config: c,
@@ -77,26 +91,17 @@ func configureServer() *ui.Server {
 	}
 	s := ui.NewServer(serverConfig)
 
-	//Handlers
-	thConfig := &ui.TransactionsHandlerConfig{
-		Service: ts,
-		Log:     zap,
-		Srv:     s.Srv,
-	}
-	ui.NewTransactionsHandler(thConfig)
-
-	uhConfig := &ui.UserHandlerConfig{
-		Service: us,
-		Log:     zap,
-		Srv:     s.Srv,
-	}
-	ui.NewUserHandler(uhConfig)
+	s.Srv.GET("/upload", th.GetUpload)
+	s.Srv.POST("/upload", th.PostUpload)
+	s.Srv.GET("/users", uh.GetUsers)
+	s.Srv.GET("/users-edit", uh.GetUsersEdit)
+	s.Srv.POST("/users-edit", uh.PostUsersEdit)
 
 	return s
 }
 
 func main() {
-	s := configureServer()
+	s := setupServer()
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
