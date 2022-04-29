@@ -9,7 +9,6 @@ import (
 	"github.com/ribeiroelton/alura-challenge-backend/config"
 	"github.com/ribeiroelton/alura-challenge-backend/internal/core/domain/usecase"
 	"github.com/ribeiroelton/alura-challenge-backend/pkg/logger"
-	"github.com/ribeiroelton/alura-challenge-backend/pkg/mailer"
 	"github.com/ribeiroelton/alura-challenge-backend/pkg/validator"
 	"github.com/ribeiroelton/alura-challenge-backend/repository"
 	"github.com/ribeiroelton/alura-challenge-backend/web/ui"
@@ -33,9 +32,6 @@ func setupServer() *ui.Server {
 		log.Fatalf("error while creating logger, details %v", err)
 	}
 
-	//Mailer
-	mailer := mailer.NewMailer()
-
 	//Validator
 	validator := validator.NewGOValidator()
 
@@ -50,11 +46,6 @@ func setupServer() *ui.Server {
 		log.Fatalf("error while creating import repository, details %v \n", err)
 	}
 
-	ur, err := repository.NewUserRepository(c)
-	if err != nil {
-		log.Fatalf("error while creating user repository, details %v \n", err)
-	}
-
 	//Services
 	tsConfig := usecase.TransactionServiceConfig{
 		Log:           zap,
@@ -64,25 +55,12 @@ func setupServer() *ui.Server {
 	}
 	ts := usecase.NewTransactionService(tsConfig)
 
-	usConfig := usecase.UserServiceConfig{
-		Log:    zap,
-		DB:     ur,
-		Mailer: mailer,
-	}
-	us := usecase.NewUserService(usConfig)
-
 	//Handlers
 	thConfig := &ui.TransactionsHandlerConfig{
 		Service: ts,
 		Log:     zap,
 	}
 	th := ui.NewTransactionsHandler(thConfig)
-
-	uhConfig := &ui.UserHandlerConfig{
-		Service: us,
-		Log:     zap,
-	}
-	uh := ui.NewUserHandler(uhConfig)
 
 	//Server
 	serverConfig := ui.ServerConfig{
@@ -93,9 +71,6 @@ func setupServer() *ui.Server {
 
 	s.Srv.GET("/upload", th.GetUpload)
 	s.Srv.POST("/upload", th.PostUpload)
-	s.Srv.GET("/users", uh.GetUsers)
-	s.Srv.GET("/users-edit", uh.GetUsersEdit)
-	s.Srv.POST("/users-edit", uh.PostUsersEdit)
 
 	return s
 }

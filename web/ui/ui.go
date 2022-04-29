@@ -45,6 +45,7 @@ func (u *Server) StartServer() error {
 	u.Srv.Use(middleware.BodyLimitWithConfig(body))
 	u.Srv.Use(middleware.CORSWithConfig(cors))
 	u.Srv.Use(middleware.Logger())
+	u.Srv.Use(middleware.Recover())
 
 	u.Srv.StaticFS("/", static)
 
